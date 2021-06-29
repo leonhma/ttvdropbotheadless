@@ -89,9 +89,8 @@ for i, name in enumerate(inv_name):
     inv.insert(i, (inv_name[i].text, inv_game[i].text))
 print(inv) """
 
-# --------------- scraping 'todo' list -------------
-print('selected campaigns:')
 
+# --------------- scraping 'todo' list -------------
 driver.get('https://www.twitch.tv/drops/campaigns/')
 sleep(2)
 xpath(
@@ -109,9 +108,6 @@ while True:
     els.insert(i, el)
     i += 1
 
-""" print([el.find_element_by_xpath(
-    './div/button/div/div[2]/div/h3').get_attribute('title') if el.find_element_by_xpath(
-    './div/button/div/div[2]/div/h3').get_attribute('title') in games else '' for el in els]) """
 
 print('retrieving watchlist..')
 watchlist = []
@@ -126,5 +122,10 @@ for x in els:
             './div/div/div/div/div/ul/li/a[@target="_blank"]').get_attribute('href'))
 print(watchlist)
 
+
+# --------------- watch the channels ------------------
+
+
+print('leaning back and watching some streams. where my popcorn at?!')
 
 driver.quit()
