@@ -1,4 +1,0 @@
-#LWP-Cookies-2.0
-Set-Cookie3: twitch.lohp.countryCode=DE; path="/"; domain=".twitch.tv"; domain_dot; expires="2022-07-18 17:09:27Z"; version=0
-Set-Cookie3: unique_id=RnH0SBq2o0erpieO4Xj9YivBA8Gbvoyj; path="/"; domain=".twitch.tv"; path_spec; domain_dot; secure; expires="2022-07-02 13:17:13Z"; samesite=none; version=0
-Set-Cookie3: unique_id_durable=RnH0SBq2o0erpieO4Xj9YivBA8Gbvoyj; path="/"; domain=".twitch.tv"; path_spec; domain_dot; secure; expires="2022-07-02 13:17:13Z"; httponly=None; samesite=none; version=0
