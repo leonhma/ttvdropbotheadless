@@ -121,9 +121,10 @@ for x in els:
         continue
     print(x.find_element_by_xpath(
         './div/button/div/div[2]/div/h3').get_attribute('title'))
-    for y in x.find_elements_by_xpath('./div/div/div'):
+    for y in x.find_elements_by_xpath('./div/div/div')[:-1]:
         watchlist.append(y.find_element_by_xpath(
-            './div/div/div/div/div/ul/li/a[@target="_blank"]').href)
+            './div/div/div/div/div/ul/li/a[@target="_blank"]').get_attribute('href'))
+print(watchlist)
 
 
 driver.quit()
