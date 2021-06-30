@@ -1,6 +1,6 @@
 # pylama:ignore=E501
 
-from time import sleep
+from time import sleep, time
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -10,21 +10,25 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
+driver_location = "./chromedriver.exe"
 
 games = [
     'Apex Legends',
     'Goose Goose Duck'
 ]
 
+
+checkdelay = 150
+
+
 print('starting')
 
-
-options_headless = Options()  # idk doesnt work for some REASON
-options_headless.add_argument(
-    '--user-data-dir=chrome-profile/')
 options = Options()
 options.add_argument(
     '--user-data-dir=chrome-profile/')
+options.add_argument('--mute-audio')
+
+options_headless = options  # idk doesnt work for some REASON
 
 
 def xpath(wait, path):
@@ -32,10 +36,19 @@ def xpath(wait, path):
         EC.presence_of_element_located((By.XPATH, path)))
 
 
+def checkprogress(driv, returnurl):
+    driv.get('https://www.twitch.tv/drops/inventory')
+    hsh = hash(driv.find_element_by_xpath(
+        '//*[@id="root"]/div/div[2]/div/main/div[2]/div[3]/div/div/div/div/div/div/div[2]').get_attribute('innerHTML'))
+    driv.get(returnurl)
+    return hsh
+
+
 # -------- testing login and first time setup -------------
 print('testing login')
+logintest = webdriver.Chrome(
+    executable_path=driver_location, options=options_headless)
 try:
-    logintest = webdriver.Chrome(options=options_headless)
     logintestwait = WebDriverWait(logintest, 2)
     logintest.get('https://www.twitch.tv/drops/campaigns/')
     xpath(
@@ -44,7 +57,7 @@ try:
     # user not logged in at this point
     print('first time setup. browser window will pop up. please complete the signin')
     logintest.quit()
-    login = webdriver.Chrome(options=options)
+    login = webdriver.Chrome(executable_path=driver_location, options=options)
     loginwait = WebDriverWait(login, 10)
     login.get('https://www.twitch.tv/')
     xpath(loginwait,
@@ -66,7 +79,8 @@ finally:
 # -------- setting up WebDriver for bot use ---------
 print('gathering data..')
 
-driver = webdriver.Chrome(options=options_headless)
+driver = webdriver.Chrome(
+    executable_path=driver_location, options=options_headless)
 driverwait = WebDriverWait(driver, 10)
 
 """ # --------------- inventory check ------------------
@@ -112,14 +126,15 @@ while True:
 print('retrieving watchlist..')
 watchlist = []
 for x in els:
-    if x.find_element_by_xpath(
-            './div/button/div/div[2]/div/h3').get_attribute('title') not in games:
+    gamename = x.find_element_by_xpath(
+        './div/button/div/div[2]/div/h3').get_attribute('title')
+    if gamename not in games:
         continue
-    print(x.find_element_by_xpath(
-        './div/button/div/div[2]/div/h3').get_attribute('title'))
     for y in x.find_elements_by_xpath('./div/div/div')[:-1]:
-        watchlist.append(y.find_element_by_xpath(
-            './div/div/div/div/div/ul/li/a[@target="_blank"]').get_attribute('href'))
+        itemnames = [el.text for el in y.find_elements_by_xpath(
+            './div/div/div/div/div/div/div/div/div/div/p')]
+        watchlist.append((gamename, itemnames, y.find_element_by_xpath(
+            './div/div/div/div/div/ul/li/a[@target="_blank"]').get_attribute('href')))
 print(watchlist)
 
 
@@ -127,5 +142,30 @@ print(watchlist)
 
 
 print('leaning back and watching some streams. where my popcorn at?!')
+
+while len(watchlist) > 0:
+    entry = watchlist.pop()
+    driver.get(entry[2])
+    xpath(driverwait, '//*[contains(@data-a-target, "form-tag-Drops")]')
+    print(f'starting watching {driver[2]}')
+    starttime = time.time()
+    try:
+        streamerurl = driver.find_element_by_xpath(
+            '//*[contains(@data-a-target, "preview-card-title-link")]').get_attribute('href')
+    except NoSuchElementException:
+        print(f'no streamer online for: {entry[0]} - {[e for e in entry[1]]}')
+        continue
+    driver.get(streamerurl)
+    sleep(checkdelay)
+    oldhash = None
+    exitflag = True
+    while exitflag:
+        newhash = checkprogress(driver, checkdelay)
+        if newhash == oldhash:
+            exitflag = False
+        oldhash = newhash
+        sleep(checkdelay)
+    print(f'finished watching {driver[2]} in {time.time() - starttime} time.')
+
 
 driver.quit()
